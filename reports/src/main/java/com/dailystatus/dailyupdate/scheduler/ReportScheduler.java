@@ -35,7 +35,7 @@ public class ReportScheduler {
         runExcelImport();
     }
 
-    @Scheduled(cron = "0 36 11 * * *", zone = "Asia/Kolkata")
+    @Scheduled(cron = "0 5 0 * * *", zone = "Asia/Kolkata")
     public void moveToHistory() {
         log.info("Moving yesterday's data to history...");
         reportService.moveToHistory();
