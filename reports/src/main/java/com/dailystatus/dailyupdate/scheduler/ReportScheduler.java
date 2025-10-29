@@ -23,7 +23,7 @@ public class ReportScheduler {
         this.reportService = reportService;
     }
 
-    @Scheduled(cron = "0 59 11 * * *", zone = "Asia/Kolkata")
+    @Scheduled(cron = "0 45 12 * * *", zone = "Asia/Kolkata")
     public void importPlannedHours() {
         log.info("Morning Excel import");
         runExcelImport();
