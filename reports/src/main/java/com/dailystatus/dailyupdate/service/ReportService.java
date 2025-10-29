@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 
 @Slf4j
@@ -32,7 +33,9 @@ public class ReportService {
 
     @Transactional
     public void moveToHistory(LocalDate date) {
-        LocalDate targetDate = (date != null) ? date : LocalDate.now().minusDays(1);
+        LocalDate targetDate = (date != null)
+                ? date
+                : LocalDate.now(ZoneId.of("Asia/Kolkata")).minusDays(1);
 
         log.info("Moving reports to history for date: {}", targetDate);
 
@@ -63,5 +66,6 @@ public class ReportService {
         }
 
         log.info("Moved {} records to history for {}", reports.size(), targetDate);
+
     }
 }
