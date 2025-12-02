@@ -17,8 +17,8 @@ import java.util.List;
 @Service
 public class ReportService {
 
-    private DailyReportRepository dailyReportRepository;
-    private DailyReportHistoryRepository historyRepository;
+    private final DailyReportRepository dailyReportRepository;
+    private final DailyReportHistoryRepository historyRepository;
 
     public ReportService(DailyReportRepository dailyReportRepository,
                          DailyReportHistoryRepository historyRepository) {
