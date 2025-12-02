@@ -49,8 +49,8 @@ public class SharePointDownloadService {
 
             return "Downloaded to: " + downloadedFile.getAbsolutePath();
         } else {
-            System.out.println("Error but continuing anyway...");
-            return null;
+            throw new IOException("Download failed, HTTP status: " + status);
+        }
         }
     }
 }
