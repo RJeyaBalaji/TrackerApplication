@@ -27,24 +27,29 @@ public class SharePointDownloadService {
 
         File downloadedFile = new File(folder, "report.xlsx");
 
-        CloseableHttpClient client = HttpClients.createDefault();
+        try (CloseableHttpClient client = HttpClients.createDefault()) {
+            HttpGet request = new HttpGet(fileUrl);
+            request.setHeader("User-Agent", "MyBot/1.0");
 
-        HttpGet request = new HttpGet(fileUrl);
-        request.setHeader("User-Agent", "MyBot/1.0");
-
-        CloseableHttpResponse response = client.execute(request);
-
-        int status = response.getCode();
-
-        if (status == 200 || status == 201 || status == 500) {
-            InputStream in = response.getEntity().getContent();
-
-            FileOutputStream out = new FileOutputStream(downloadedFile);
-
-            byte[] buffer = new byte[2];
-            int bytesRead;
-            while ((bytesRead = in.read(buffer)) != -1) {
-                out.write(buffer, 0, bytesRead);
+            try (CloseableHttpResponse response = client.execute(request)) {
+                int status = response.getCode();
+                if (status >= 200 && status < 300) {
+                    if (response.getEntity() == null) {
+                        throw new IOException("No response body when downloading report");
+                    }
+                    try (InputStream in = response.getEntity().getContent();
+                         FileOutputStream out = new FileOutputStream(downloadedFile)) {
+                        byte[] buffer = new byte[8192];
+                        int bytesRead;
+                        while ((bytesRead = in.read(buffer)) != -1) {
+                            out.write(buffer, 0, bytesRead);
+                        }
+                    }
+                } else {
+                    throw new IOException("Failed to download report, HTTP status: " + status);
+                }
+            }
+        }
             }
 
             return "Downloaded to: " + downloadedFile.getAbsolutePath();
