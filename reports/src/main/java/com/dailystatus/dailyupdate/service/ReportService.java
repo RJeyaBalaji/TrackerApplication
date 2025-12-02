@@ -47,12 +47,8 @@ public class ReportService {
             return;
         }
 
-        for (int i = 0; i < reports.size(); i++) {
-
-            DailyReport report = reports.get(i);
-
+        for (DailyReport report : reports) {
             DailyReportHistory history = new DailyReportHistory();
-            history = new DailyReportHistory();
 
             history.setEmployeeName(report.getEmployeeName());
             history.setReportDate(report.getReportDate());
