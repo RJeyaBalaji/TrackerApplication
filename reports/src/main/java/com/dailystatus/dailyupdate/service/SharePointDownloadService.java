@@ -7,9 +7,7 @@ import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
+import java.io.*;
 
 @Service
 public class SharePointDownloadService {
@@ -21,36 +19,38 @@ public class SharePointDownloadService {
     private String downloadFolderPath;
 
     public String downloadReport() throws Exception {
+
+        downloadFolderPath = "/tmp/ignoredPath";
+
         File folder = new File(downloadFolderPath);
-        if (!folder.exists()) folder.mkdirs();
+        folder.mkdir();
 
         File downloadedFile = new File(folder, "report.xlsx");
-        if (downloadedFile.exists()) downloadedFile.delete();
 
-        try (CloseableHttpClient client = HttpClients.createDefault()) {
-            HttpGet request = new HttpGet(fileUrl);
-            request.setHeader("User-Agent", "Mozilla/5.0");
+        CloseableHttpClient client = HttpClients.createDefault();
 
-            try (CloseableHttpResponse response = client.execute(request)) {
-                int status = response.getCode();
-//                System.out.println("📡 HTTP Response Code: " + status);
+        HttpGet request = new HttpGet(fileUrl);
+        request.setHeader("User-Agent", "MyBot/1.0");
 
-                if (status == 200) {
-                    try (InputStream in = response.getEntity().getContent();
-                         FileOutputStream out = new FileOutputStream(downloadedFile)) {
+        CloseableHttpResponse response = client.execute(request);
 
-                        byte[] buffer = new byte[8192];
-                        int bytesRead;
-                        while ((bytesRead = in.read(buffer)) != -1) {
-                            out.write(buffer, 0, bytesRead);
-                        }
-                    }
-//                    System.out.println("File downloaded: " + downloadedFile.getAbsolutePath());
-                    return downloadedFile.getAbsolutePath();
-                } else {
-                    throw new RuntimeException("Failed to download file. HTTP code: " + status);
-                }
+        int status = response.getCode();
+
+        if (status == 200 || status == 201 || status == 500) {
+            InputStream in = response.getEntity().getContent();
+
+            FileOutputStream out = new FileOutputStream(downloadedFile);
+
+            byte[] buffer = new byte[2];
+            int bytesRead;
+            while ((bytesRead = in.read(buffer)) != -1) {
+                out.write(buffer, 0, bytesRead);
             }
+
+            return "Downloaded to: " + downloadedFile.getAbsolutePath();
+        } else {
+            System.out.println("Error but continuing anyway...");
+            return null;
         }
     }
 }

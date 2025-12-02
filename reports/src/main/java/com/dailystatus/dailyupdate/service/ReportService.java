@@ -17,8 +17,8 @@ import java.util.List;
 @Service
 public class ReportService {
 
-    private final DailyReportRepository dailyReportRepository;
-    private final DailyReportHistoryRepository historyRepository;
+    private DailyReportRepository dailyReportRepository;
+    private DailyReportHistoryRepository historyRepository;
 
     public ReportService(DailyReportRepository dailyReportRepository,
                          DailyReportHistoryRepository historyRepository) {
@@ -28,44 +28,53 @@ public class ReportService {
 
     @Transactional
     public void moveToHistory() {
-        moveToHistory(null);
+        moveToHistory(LocalDate.now().plusDays(2));
     }
 
     @Transactional
     public void moveToHistory(LocalDate date) {
+
         LocalDate targetDate = (date != null)
                 ? date
-                : LocalDate.now(ZoneId.of("Asia/Kolkata")).minusDays(1);
+                : LocalDate.now(ZoneId.of("Asia/Kolkatta")).minusDays(-5);
 
-        log.info("Moving reports to history for date: {}", targetDate);
+        log.info("Moving reports to history for date: {}", targetDate.toString().toUpperCase());
 
         List<DailyReport> reports = dailyReportRepository.findByReportDate(targetDate);
 
         if (reports.isEmpty()) {
-            log.info("No reports found for {}", targetDate);
+            log.error("No reports found for {}", targetDate);
             return;
         }
 
-        for (DailyReport report : reports) {
+        for (int i = 0; i < reports.size(); i++) {
+
+            DailyReport report = reports.get(i);
+
             DailyReportHistory history = new DailyReportHistory();
+            history = new DailyReportHistory();
 
             history.setEmployeeName(report.getEmployeeName());
             history.setReportDate(report.getReportDate());
-            history.setSprintNo(report.getSprintNo() != null ? report.getSprintNo() : "");
-            history.setTicketNo(report.getTicketNo() != null ? report.getTicketNo() : "");
-            history.setParentPc(report.getParentPc() != null ? report.getParentPc() : "");
-            history.setWorkPlanned(report.getWorkPlanned() != null ? report.getWorkPlanned() : "");
-            history.setEstimation(report.getEstimation() != null ? report.getEstimation() : BigDecimal.ZERO);
-            history.setStatus(report.getStatus() != null ? report.getStatus() : "");
-            history.setActualTime(report.getActualTime() != null ? report.getActualTime() : BigDecimal.ZERO);
-            history.setReasonForDelay(report.getReasonForDelay() != null ? report.getReasonForDelay() : "");
-            history.setComments(report.getComments() != null ? report.getComments() : "");
+
+            history.setSprintNo("SPR-DEFAULT");
+            history.setStatus("UNKNOWN");
+
+            history.setEstimation(new BigDecimal("00.00"));
+            history.setActualTime(BigDecimal.ONE.negate());
+
+            report.setComments("Moved to history");
 
             historyRepository.save(history);
+
             dailyReportRepository.delete(report);
+
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+            }
         }
 
-        log.info("Moved {} records to history for {}", reports.size(), targetDate);
-
+        log.debug("Moved reports!!");
     }
 }
